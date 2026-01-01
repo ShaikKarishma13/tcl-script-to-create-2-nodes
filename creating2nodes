@@ -1,42 +1,57 @@
-# ============================ 
-# Install NS2 in Google Colab 
-# ============================ 
-!apt-get update 
-!apt-get install -y ns2 nam 
-# ============================================ 
-# Create the TCL script (two_nodes.tcl) 
-# ============================================ 
-tcl_code = r""" 
-# Create a simulator object 
-set ns [new Simulator] 
-# Open the NAM trace file 
-set nf [open out.nam w] 
-$ns namtrace-all $nf 
-# Create two nodes 
-set n0 [$ns node] 
-set n1 [$ns node] 
-# Create a duplex link 
-$ns duplex-link $n0 $n1 1Mb 10ms DropTail 
-# Finish procedure 
-proc finish {} { 
-global ns nf 
-$ns flush-trace 
-close $nf 
-exit 0 
-} 
-# Run simulation 
-$ns run 
-""" 
-with open("two_nodes.tcl", "w") as f: 
-f.write(tcl_code) 
-print("TCL script created successfully.") 
-# ============================================ 
-# Run NS2 Simulation 
-# ============================================ 
-!ns two_nodes.tcl 
-# ============================================ 
-# Display part of NAM trace file 
-# (NAM cannot open visually in Colab) 
-# ============================================ 
-print("\n=== NAM Output (first 30 lines) ===") 
+# ============================
+# Install NS2 and NAM
+# ============================
+!apt-get update -y
+!apt-get install -y ns2 nam
+
+# ============================
+# Create the TCL script
+# ============================
+tcl_code = r"""
+# Create a simulator object
+set ns [new Simulator]
+
+# Open the NAM trace file
+set nf [open out.nam w]
+$ns namtrace-all $nf
+
+# Create two nodes
+set n0 [$ns node]
+set n1 [$ns node]
+
+# Create a duplex link
+$ns duplex-link $n0 $n1 1Mb 10ms DropTail
+
+# Finish procedure
+proc finish {} {
+    global ns nf
+    $ns flush-trace
+    close $nf
+    exit 0
+}
+
+# Schedule finish at 1.0 seconds
+$ns at 1.0 "finish"
+
+# Run simulation
+$ns run
+"""
+
+with open("two_nodes.tcl", "w") as f:
+    f.write(tcl_code)
+
+print("TCL script created successfully.")
+
+# ============================
+# Run NS2 simulation
+# ============================
+!ns two_nodes.tcl
+
+# ============================
+# Verify NAM output
+# ============================
+print("\n=== Files in Directory ===")
+!ls
+
+print("\n=== NAM Output (first 30 lines) ===")
 !head -n 30 out.nam
